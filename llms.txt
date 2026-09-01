@@ -1,0 +1,20 @@
+# TasteCheck — ResonantOS add-on
+
+> The TasteCheck frontend craft and ship-gate skill pack, packaged as a ResonantOS 2.0.0-alpha local-service add-on. One honest line: this add-on serves the pack's documents to agents over a local service — it does not run the pack's checks headless, and it does not fake verdicts. The pack is TasteCheck (MIT, KyaniteLabs): 19 checkable design-quality gate skills (plus tasteroll, in the pack but not yet upstream-listed) (typography, spacing, color, accessibility, motion, slop checks, and more), vendored byte-identical under `vendor/` and pinned by hash to the upstream commit.
+
+## Canonical links
+
+- This repo (the ResonantOS add-on wrapper): https://github.com/simongonzalezdc/resonant-tastecheck
+- TasteCheck (canonical upstream, the skill pack): https://github.com/KyaniteLabs/tastecheck
+
+## Key facts
+
+- License: MIT (wrapper and pack).
+- ResonantOS add-on validator: 0 errors, 0 warnings.
+- Wrapper: Python 3.10+ standard library only; local service on 127.0.0.1:4894; zero capabilities requested, no subprocess, no disk writes outside var/.
+- Honest surface: `headless_check_execution: false` is pinned in the status output, manifest, and README — the pack's checks are prose rules executed by the reading agent, plus browser-injectable auditors; no headless check runner exists, so none is pretended.
+- Methods: `tastecheck.status`, `tastecheck.skills`, `tastecheck.skill.get`, `tastecheck.skill.files`, `tastecheck.contract`.
+
+## Relationship
+
+Community gift by Kyanite Labs for ResonantOS — canonical upstream: https://github.com/KyaniteLabs/tastecheck; this wrapper is non-canonical. If wrapper and pack disagree, the canonical pack wins.
