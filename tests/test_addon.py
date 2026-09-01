@@ -300,7 +300,9 @@ class TestRedaction(unittest.TestCase):
     def test_no_home_paths_in_whole_tree_including_vendor(self):
         needle = (os.sep + "Users" + os.sep).encode()  # built at runtime so this file stays clean
         for root, dirs, files in os.walk(ADDON_ROOT):
-            dirs[:] = [d for d in dirs if d not in ("__pycache__",)]
+            # .git is VCS metadata: a clone's config legitimately embeds the
+            # absolute origin URL, which is not shipped content.
+            dirs[:] = [d for d in dirs if d not in ("__pycache__", ".git")]
             for name in files:
                 if name.endswith(".pyc"):
                     continue
