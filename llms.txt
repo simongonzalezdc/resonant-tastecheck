@@ -1,6 +1,6 @@
 # TasteCheck — ResonantOS add-on
 
-> The TasteCheck frontend craft and ship-gate skill pack, packaged as a ResonantOS 2.0.0-alpha local-service add-on. One honest line: this add-on serves the pack's documents to agents over a local service — it does not run the pack's checks headless, and it does not fake verdicts. The pack is TasteCheck (MIT, KyaniteLabs): 20 checkable design-quality gate skills (typography, spacing, color, accessibility, motion, slop checks, and more), vendored byte-identical under `vendor/` and pinned by hash to the upstream commit.
+> The TasteCheck frontend craft and ship-gate skill pack, packaged as a ResonantOS 2.0.0-alpha local-service add-on. One honest line: this add-on serves the pack's documents to agents over a local service — it does not run the pack's checks headless, and it does not fake verdicts. The pack is TasteCheck (MIT, KyaniteLabs): 19 checkable design-quality gate skills (plus tasteroll, in the pack but not yet upstream-listed) (typography, spacing, color, accessibility, motion, slop checks, and more), vendored byte-identical under `vendor/` and pinned by hash to the upstream commit.
 
 ## Canonical links
 
