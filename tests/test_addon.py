@@ -322,6 +322,7 @@ class TestAdversarialHTTP(unittest.TestCase):
                 + b"\r\n\r\n" + big[:65536 + 1])
             self.assertTrue(status.startswith("HTTP/1.1 413"), status)
             self.assertIsNotNone(data)
+            self.assertIn(b"Connection: close", data)  # advertised, not silent (gifts#4)
 
     def test_lying_content_length_408(self):
         """Declaring more bytes than sent must not hang or misparse: 408 + close.
@@ -334,6 +335,7 @@ class TestAdversarialHTTP(unittest.TestCase):
                 status, data = raw_request(
                     b"POST / HTTP/1.1\r\nHost: x\r\nContent-Length: 500\r\n\r\n{\"method\":\"taste")
                 self.assertTrue(status.startswith("HTTP/1.1 408"), status)
+                self.assertIn(b"Connection: close", data)  # advertised, not silent (gifts#4)
         finally:
             server.Handler.timeout = original_timeout
 
