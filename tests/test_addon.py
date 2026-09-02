@@ -102,7 +102,7 @@ class TestVendorPin(unittest.TestCase):
             # A clone at any other commit verifies the wrong tree; the
             # recorded hash-pins above still enforce pack integrity.
             self.skipTest(
-                f"local upstream clone is at {self.commit[:12]}, not the pinned "
+                f"local upstream clone is at {(self.commit or 'unknown')[:12]}, not the pinned "
                 f"{self.meta['upstream']['commit'][:12]}; recorded hash-pins still "
                 "enforce pack integrity (pull upstream to re-arm the live check)")
         else:
