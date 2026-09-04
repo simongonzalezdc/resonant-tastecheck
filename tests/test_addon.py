@@ -95,11 +95,18 @@ class TestVendorPin(unittest.TestCase):
         self.assertEqual(self.meta["upstream"]["name"], "tastecheck")
         self.assertEqual(self.meta["upstream"]["vendor"], "KyaniteLabs")
         self.assertEqual(self.meta["upstream"]["license"], "MIT")
-        if self.commit is not None:
-            self.assertEqual(self.meta["upstream"]["commit"], self.commit)
-        else:
-            self.assertRegex(self.meta["upstream"]["commit"], r"^[0-9a-f]{40}$")
         self.assertGreater(len(self.meta["files"]), 100)
+        if self.commit is None:
+            self.assertRegex(self.meta["upstream"]["commit"], r"^[0-9a-f]{40}$")
+        elif self.commit != self.meta["upstream"]["commit"]:
+            # A clone at any other commit verifies the wrong tree; the
+            # recorded hash-pins above still enforce pack integrity.
+            self.skipTest(
+                f"local upstream clone is at {(self.commit or 'unknown')[:12]}, not the pinned "
+                f"{self.meta['upstream']['commit'][:12]}; recorded hash-pins still "
+                "enforce pack integrity (pull upstream to re-arm the live check)")
+        else:
+            self.assertEqual(self.meta["upstream"]["commit"], self.commit)
 
     def test_every_pinned_file_matches_recorded_hash(self):
         for rel, expected in self.meta["files"].items():
@@ -123,10 +130,16 @@ class TestVendorPin(unittest.TestCase):
     def test_vendored_bytes_identical_to_upstream_git_head(self):
         """Direct byte-identity vs the committed upstream tree (not the
         working tree, which may carry local uncommitted edits). Skipped on
-        machines without the upstream clone; the recorded hash-pin above
+        machines without the upstream clone OR with a clone at any other
+        commit (it would verify the wrong tree); the recorded hash-pin above
         still guards integrity there."""
         if not os.path.isdir(os.path.join(UPSTREAM, ".git")):
             self.skipTest(f"upstream clone not present at {UPSTREAM}")
+        if self.commit != self.meta["upstream"]["commit"]:
+            self.skipTest(
+                f"local upstream clone is at {(self.commit or 'unknown')[:12]}, not the pinned "
+                f"{self.meta['upstream']['commit'][:12]}; recorded hash-pins still "
+                "enforce pack integrity")
         for rel, expected in self.meta["files"].items():
             upstream_bytes = subprocess.run(
                 ["git", "-C", UPSTREAM, "show", f"HEAD:{rel}"],
@@ -322,6 +335,7 @@ class TestAdversarialHTTP(unittest.TestCase):
                 + b"\r\n\r\n" + big[:65536 + 1])
             self.assertTrue(status.startswith("HTTP/1.1 413"), status)
             self.assertIsNotNone(data)
+            self.assertIn(b"Connection: close", data)  # advertised, not silent (gifts#4)
 
     def test_lying_content_length_408(self):
         """Declaring more bytes than sent must not hang or misparse: 408 + close.
@@ -334,6 +348,7 @@ class TestAdversarialHTTP(unittest.TestCase):
                 status, data = raw_request(
                     b"POST / HTTP/1.1\r\nHost: x\r\nContent-Length: 500\r\n\r\n{\"method\":\"taste")
                 self.assertTrue(status.startswith("HTTP/1.1 408"), status)
+                self.assertIn(b"Connection: close", data)  # advertised, not silent (gifts#4)
         finally:
             server.Handler.timeout = original_timeout
 
