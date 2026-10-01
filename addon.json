@@ -1,0 +1,160 @@
+{
+  "id": "addon.tastecheck",
+  "name": "TasteCheck",
+  "version": "0.1.0",
+  "author": "KyaniteLabs",
+  "category": "tool",
+  "sdkVersion": "0.1.0",
+  "description": "Serves the TasteCheck frontend craft and ship-gate skill pack (19 checkable design-quality gate skills plus tasteroll) to agents over a local http-json service: the catalog, each skill's document, its file list, and its machine-readable contract. The pack's checks are executed by the reading agent or by browser auditors — never headless here, and never faked.",
+  "runtimeType": "local-service",
+  "surfaces": [],
+  "requestedCapabilities": [],
+  "grantPresets": [],
+  "provenance": {
+    "tier": "sideloaded-unverified",
+    "verificationState": "unverified",
+    "signed": false
+  },
+  "runtimeIsolation": {
+    "boundary": "host-mediated-service",
+    "supportsDegradedMode": true,
+    "requiresReviewedGrant": true
+  },
+  "providerRequirements": {
+    "sharedProfiles": [],
+    "supportsPrivateCredentials": false
+  },
+  "systemSlots": [],
+  "archiveIntegration": {
+    "readScopes": [],
+    "intakeWriteScopes": [],
+    "canRequestIngest": false,
+    "canWriteKnowledgePages": false
+  },
+  "health": {
+    "strategy": "http-json-status"
+  },
+  "service": {
+    "protocol": "http-json",
+    "entrypoint": "http://127.0.0.1:4894",
+    "healthCommand": "tastecheck.status"
+  },
+  "tools": [
+    {
+      "name": "tastecheck.status",
+      "description": "Report service version, vendored pack identity (name, version, license, upstream commit), skill count, and the honesty note: check execution is not runnable headless by this service.",
+      "requiredCapabilities": [],
+      "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ok": { "type": "boolean" },
+          "version": { "type": "string" },
+          "pack": { "type": "object" },
+          "skills_count": { "type": "integer" },
+          "capabilities_requested": { "type": "array" },
+          "headless_check_execution": { "type": "boolean" },
+          "honesty_note": { "type": "string" }
+        }
+      },
+      "audit": { "logRequest": true, "logResult": true, "artifactTypes": ["log"] },
+      "requiresHumanApproval": false
+    },
+    {
+      "name": "tastecheck.skills",
+      "description": "List the vendored gate skills: id, name, frontmatter description, contract class (gate/audit/...), and file count. This is the pack's real surface: an agent picks a skill here, then reads its document.",
+      "requiredCapabilities": [],
+      "inputSchema": { "type": "object", "properties": {}, "additionalProperties": false },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ok": { "type": "boolean" },
+          "count": { "type": "integer" },
+          "skills": { "type": "array", "items": { "type": "object" } }
+        }
+      },
+      "audit": { "logRequest": true, "logResult": true, "artifactTypes": ["log"] },
+      "requiresHumanApproval": false
+    },
+    {
+      "name": "tastecheck.skill.get",
+      "description": "Fetch one pack document verbatim (home-path redacted): the skill's SKILL.md by default, or a listed references/assets file by exact index path. Running the skill happens in the reading agent, not in this service.",
+      "requiredCapabilities": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "skill": { "type": "string", "maxLength": 64, "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "path": { "type": "string", "maxLength": 2048, "description": "Relative path inside the skill folder; must exactly match the index (see tastecheck.skill.files). Defaults to SKILL.md." }
+        },
+        "required": ["skill"],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ok": { "type": "boolean" },
+          "skill": { "type": "string" },
+          "path": { "type": "string" },
+          "size": { "type": "integer" },
+          "sha256": { "type": "string" },
+          "content": { "type": "string" }
+        }
+      },
+      "audit": { "logRequest": true, "logResult": true, "artifactTypes": ["markdown"] },
+      "requiresHumanApproval": false
+    },
+    {
+      "name": "tastecheck.skill.files",
+      "description": "List the exact file paths available inside one skill folder (SKILL.md, references/, assets/); these are the only paths tastecheck.skill.get accepts.",
+      "requiredCapabilities": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "skill": { "type": "string", "maxLength": 64, "pattern": "^[a-z0-9][a-z0-9-]*$" }
+        },
+        "required": ["skill"],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ok": { "type": "boolean" },
+          "skill": { "type": "string" },
+          "files": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "audit": { "logRequest": true, "logResult": true, "artifactTypes": ["file-list"] },
+      "requiresHumanApproval": false
+    },
+    {
+      "name": "tastecheck.contract",
+      "description": "Fetch one skill's machine-readable contract.json from the pack: trigger conditions, exclusions, inputs/outputs, stop conditions, and handoff fields. The pack's own routing metadata, served verbatim.",
+      "requiredCapabilities": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "skill": { "type": "string", "maxLength": 64, "pattern": "^[a-z0-9][a-z0-9-]*$" }
+        },
+        "required": ["skill"],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ok": { "type": "boolean" },
+          "skill": { "type": "string" },
+          "contract": { "type": "object" }
+        }
+      },
+      "audit": { "logRequest": true, "logResult": true, "artifactTypes": ["log"] },
+      "requiresHumanApproval": false
+    }
+  ],
+  "installHooks": {
+    "onInstall": "start-tastecheck-service"
+  },
+  "compatibility": {
+    "shellVersion": "^0.1.0",
+    "platforms": ["macOS", "linux", "windows"]
+  }
+}
